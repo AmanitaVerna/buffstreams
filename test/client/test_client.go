@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/StabbyCutyou/buffstreams"
-	"github.com/StabbyCutyou/buffstreams/test/message"
-	"github.com/golang/protobuf/proto"
+	"github.com/amanitaverna/buffstreams"
+	"github.com/amanitaverna/buffstreams/test/message"
+	"google.golang.org/protobuf/proto"
 )
 
 // Test client to send a sample payload of data endlessly
@@ -22,7 +22,7 @@ func main() {
 	name := "Stabby"
 	date := time.Now().UnixNano()
 	data := "This is an intenntionally long and rambling sentence to pad out the size of the message."
-	msg := &message.Note{Name: &name, Date: &date, Comment: &data}
+	msg := &message.Note{Name: name, Date: date, Comment: data}
 	msgBytes, err := proto.Marshal(msg)
 	if err != nil {
 		log.Print(err)

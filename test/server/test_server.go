@@ -5,9 +5,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/StabbyCutyou/buffstreams"
-	"github.com/StabbyCutyou/buffstreams/test/message"
-	"github.com/golang/protobuf/proto"
+	"github.com/amanitaverna/buffstreams"
+	"github.com/amanitaverna/buffstreams/test/message"
+	"google.golang.org/protobuf/proto"
 )
 
 // TestCallback is a simple server for test purposes. It has a single callback,

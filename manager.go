@@ -38,7 +38,7 @@ func NewManager() *Manager {
 
 // StartListening is an asyncrhonous, non-blocking method. It begins listening on the given
 // port, and fire off a goroutine for every client connection it receives. That goroutine will
-// read the fixed header, then the message payload, and then invoke the povided ListenCallbacl.
+// read the fixed header, then the message payload, and then invoke the povided ListenCallback.
 // In the event of an transport error, it will disconnect the client. It is the clients responsibility
 // to re-connect if needed.
 func (bm *Manager) StartListening(cfg TCPListenerConfig) error {
@@ -116,7 +116,7 @@ func (bm *Manager) CloseWriter(address string) error {
 // Write allows you to dial to a remote or local TCP endpoint, and send a series of
 // bytes as messages. Each array of bytes you pass in will be pre-pended with it's size
 // within the size of the pre-defined maximum message size. If the connection isn't open yet,
-// WriteTo will open it, and cache it. If for anyreason the connection breaks, it will be disposed
+// WriteTo will open it, and cache it. If for any reason the connection breaks, it will be disposed
 // a. If not all bytes can be written,
 // WriteTo will keep trying until the full message is delivered, or the connection is broken.
 func (bm *Manager) Write(address string, data []byte) (int, error) {

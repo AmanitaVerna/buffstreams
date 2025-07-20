@@ -1,7 +1,9 @@
-BuffStreams [![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/StabbyCutyou/buffstreams) [![Build Status](https://travis-ci.org/StabbyCutyou/buffstreams.svg)](https://travis-ci.org/StabbyCutyou/buffstreams)
+BuffStreams [![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/amanitaverna/buffstreams)
 ====================
 
 Streaming Protocol Buffers messages over TCP in Golang
+
+Most of this readme is copied from StabbyCutyou's original readme, with some modifications. I (AmanitaVerna) have updated it to use go modules, and the modern protobuf, and included shranet's fixes which were languishing in a 5 year old PR.
 
 What is BuffStreams?
 =====================
@@ -13,7 +15,7 @@ BuffStreams gives you a simple interface to start a (blocking or non) listener o
 Why BuffStreams
 ====================
 
-I was writing a few different projects for fun in Golang, and kept writing code something like what is in the library, but less organized. I decided to focus on the networking code, pulling it out and improving it so I knew it could be trusted to perform reliably across projects.
+The original author, StabbyCutyou, wrote "I was writing a few different projects for fun in Golang, and kept writing code something like what is in the library, but less organized. I decided to focus on the networking code, pulling it out and improving it so I knew it could be trusted to perform reliably across projects."
 
 Ethos
 =====
@@ -51,13 +53,13 @@ How do I use it?
 Download the library
 
 ```go
-go get "github.com/StabbyCutyou/buffstreams"
+go get "github.com/amanitaverna/buffstreams"
 ```
 
 Import the library
 
 ```go
-import "github.com/StabbyCutyou/buffstreams"
+import "github.com/amanitaverna/buffstreams"
 ```
 
 For a quick example of a complete end to end client and server, check out the examples in the test/ directory, namely test/client/test_client.go and test/server/test_server.go. These two files are designed to work together to demonstrate an end to end integration of Buffstreams, in the simplest possible way.
@@ -73,7 +75,7 @@ To begin listening, first create a TCPListenerConfig object to define how the li
 cfg := TCPListenerConfig {
   EnableLogging: false, // true will have log messages printed to stdout/stderr, via log
   MaxMessageSize: 4096,
-  Callback: func(byte[])error{return nil} // Any function type that adheres to this signature, you'll need to deserialize in here if need be
+  Callback: func(*TCPConn, byte[])error{return nil} // Any function type that adheres to this signature, you'll need to deserialize in here if need be
   Address: FormatAddress("", strconv.Itoa(5031)) // Any address with the pattern ip:port. The FormatAddress helper is here for convenience. For listening, you normally don't want to provide an ip unless you have a reason.
 }
 ```
@@ -98,10 +100,10 @@ err := btl.StartListening()
 The ListenCallback
 ==================
 
-The way Buffstreams handles acting over the incoming messages is to let you provide a callback to operate on the bytes. ListenCallback takes in an array/slice of bytes, and returns an error.
+The way Buffstreams handles acting over the incoming messages is to let you provide a callback to operate on the bytes. ListenCallback takes in a reference to the TCPConn from which the message was received, and an array/slice of bytes, and returns an error.
 
 ```go
-type ListenCallback func([]byte) error
+type ListenCallback func(*TCPConn, []byte) error
 ```
 
 The callback will receive the raw bytes for a given protobuff message. The header containing the size will have been removed. It is the callbacks responsibility to deserialize and act upon the message.
@@ -111,7 +113,7 @@ The Listener gets the message, your callback does the work.
 A sample callback might start like so:
 
 ```go
-  func ListenCallbackExample ([]byte data) error {
+  func ListenCallbackExample (conn *TCPConn, []byte data) error {
     msg := &message.ImportantProtoBuffStreamingMessage{}
     err := proto.Unmarshal(data, msg)
     // Now you do some stuff with msg
@@ -119,12 +121,12 @@ A sample callback might start like so:
   }
 ```
 
-The callback is currently run in it's own goroutine, which also handles reading from the connection until the reader disconnects, or there is an error. Any errors reading from a connection incoming will be up to the client to handle.
+The callback is currently run in its own goroutine, which also handles reading from the connection until the reader disconnects, or there is an error. Any errors reading from a connection incoming will be up to the client to handle.
 
 Writing messages
 ================
 
-To begin writing messages to a new connection, you'll need to dial a using TCPConnConfig
+To begin writing messages to a new connection, you'll need to dial out using TCPConnConfig
 
 ```go
 cfg := TCPConnConfig {
@@ -134,7 +136,7 @@ cfg := TCPConnConfig {
 }
 ```
 
-Once you have a configuration object, you can Dial out.
+Once you have a configuration object, you can dial out.
 
 ```go
 btc, err := buffstreams.DialTCP(cfg)
@@ -148,7 +150,7 @@ From there, you can write your data
   bytesWritten, err := btc.Write(msgBytes, true)
 ```
 
-If there is an error in writing, that connection will be closed and be reopened on the next write. There is no guarantee if any the bytesWritten value will be >0 or not in the event of an error which results in a reconnect.
+If there is an error in writing, that connection will be closed and will be reopened on the next write. There is no guarantee if any the bytesWritten value will be >0 or not in the event of an error which results in a reconnect.
 
 Manager
 ===========

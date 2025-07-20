@@ -1,7 +1,11 @@
+syntax = "proto3";
+
+option go_package = "github.com/amanitaverna/buffstreams/test/message";
+
 package message;
 
 message Note    {
-   required string name = 1;
-   required int64 date = 2;
-   required string comment = 3;
+   string name = 1;
+   int64 date = 2;
+   string comment = 3;
 }
